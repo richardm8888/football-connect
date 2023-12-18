@@ -2,7 +2,7 @@
     "functions": {
       "api/game.js": {
         "memory": 3008,
-        "maxDuration": 60
+        "maxDuration": 10
       }
     },
     "devCommand": "parcel src/index.html"
