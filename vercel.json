@@ -1,0 +1,9 @@
+{
+    "functions": {
+      "api/game.js": {
+        "memory": 1024,
+        "maxDuration": 10
+      }
+    },
+    "devCommand": "parcel src/index.html"
+  }

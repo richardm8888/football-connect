@@ -18,3 +18,7 @@ yarn-error.log*
 .npm/
 
 *.swp
+.vercel
+
+
+.env*
