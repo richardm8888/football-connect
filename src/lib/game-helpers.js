@@ -19,6 +19,7 @@ function getAllWordsOfGameData({ gameData }) {
 }
 
 export function shuffleGameData({ gameData }) {
+    console.log(gameData);
   let categorySize;
   if (gameData[0]?.words) {
     categorySize = gameData[0].words.length;

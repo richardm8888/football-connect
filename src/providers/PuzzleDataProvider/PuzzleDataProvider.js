@@ -1,12 +1,24 @@
-import React from "react";
-import { puzzleAnswers } from "../../lib/time-utils";
+import React, { useEffect } from "react";
+// import { puzzleAnswers } from "../../lib/time-utils";
+import getGameData from "../../generate";
 
 export const PuzzleDataContext = React.createContext();
 
 function PuzzleDataProvider({ children }) {
-  const [gameData, setGameData] = React.useState(puzzleAnswers);
-  const categorySize = gameData[0].words.length;
-  const numCategories = gameData.length;
+    useEffect(() => {
+    getGameData().then((data) => {
+        setGameData(data);   
+    });
+  }, []);
+
+  const [gameData, setGameData] = React.useState([]);
+  const categorySize = gameData[0]?.words?.length ?? 0;
+  const numCategories = gameData?.length ?? 0;
+
+  if (!gameData.length) {
+    return <></>;
+  }
+
   return (
     <PuzzleDataContext.Provider
       value={{ gameData, numCategories, categorySize }}
