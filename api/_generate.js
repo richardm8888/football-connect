@@ -1,4 +1,4 @@
-const neo4j = require('neo4j-driver');
+import neo4j from 'neo4j-driver';
 import { sql } from "@vercel/postgres";
 
 const URI = process.env.NEO4J_HOST || 'neo4j://localhost:7687';
@@ -39,15 +39,18 @@ async function getGameData() {
             for(let record of records) {
                 // Add first player
                 finalPlayers[record.get('clubName').valueOf()] = [record.get('playerName')];
+                allSelectedPlayers.push(record.get('playerId').valueOf());
                 const players = await lookupPlayersByClub(record.get('clubId').valueOf(), record.get('playerId').valueOf(), 3, allSelectedPlayers);
 
                 for(let player of players) {
                     finalPlayers[record.get('clubName').valueOf()].push(player.get('p').properties.name);
+                    allSelectedPlayers.push(player.get('p').properties.playerId.valueOf());
                     
                     finalPlayers[player.get('c2').properties.name.valueOf()] = [];
                     const morePlayers = await lookupPlayersByClub(player.get('c2').properties.clubId.valueOf(), player.get('p').properties.playerId.valueOf(), 4, allSelectedPlayers);
                     for(let morePlayer of morePlayers) {
                         finalPlayers[player.get('c2').properties.name.valueOf()].push(morePlayer.get('p').properties.name);
+                        allSelectedPlayers.push(morePlayer.get('p').properties.playerId.valueOf());
                     }
                 }
             }
