@@ -28,6 +28,7 @@
     "react-confetti-explosion": "^2.1.2",
     "react-countdown": "^2.3.5",
     "react-dom": "18.2.0",
+    "react-icons": "^4.12.0",
     "react-spring": "^9.7.3",
     "rimraf": "5.0.1",
     "styled-components": "^6.1.0",

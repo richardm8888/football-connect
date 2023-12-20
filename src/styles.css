@@ -16,6 +16,7 @@ html {
   --color-gray-500: hsl(0deg 0% 50%);
   --color-gray-700: hsl(0deg 0% 75%);
   --color-gray-900: hsl(0deg 0% 90%);
+  --color-blue-100: hsl(200deg 100% 30%);
 }
 
 /*
@@ -41,7 +42,8 @@ header {
   display: flex;
   height: var(--header-height);
   border-bottom: 1px solid var(--color-gray-700);
-  color: var(--color-gray-300);
+  background-color: var(--color-blue-100);
+  color: #ffffff;
 }
 
 header .side {
@@ -52,7 +54,7 @@ header .side {
 
 h1 {
   flex: 1;
-  font-size: 2rem;
+  font-size: 1.5rem;
   line-height: var(--header-height);
   text-align: center;
 }
