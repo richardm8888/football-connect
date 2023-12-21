@@ -6,70 +6,83 @@ const USER = process.env.NEO4J_USER || 'neo4j';
 const PASSWORD = process.env.NEO4J_PASSWORD || 'qwerty123';
 const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
 
-async function getCached() {
-    const { rows } = await sql`SELECT * FROM games WHERE date = CURRENT_DATE;`;
-
+async function getYesterdaysGame() {
+    const { rows } = await sql`SELECT * FROM games WHERE date = CURRENT_DATE - 1;`;
     return rows[0];
 }
 
-async function saveCached(gameData) {
-    await sql`INSERT INTO games (date, data) VALUES (CURRENT_DATE, ${JSON.stringify(gameData)});`;
+
+async function getGame() {
+    const { rows } = await sql`SELECT * FROM games WHERE date = CURRENT_DATE;`;
+    return rows[0];
+}
+
+async function saveGame(gameData, clubIds, playerIds) {
+    await sql`INSERT INTO games (date, data, clubs, players) VALUES (CURRENT_DATE, ${JSON.stringify(gameData)}, ${JSON.stringify(clubIds)}, ${JSON.stringify(playerIds)});`;
 }
 
 async function getGameData() {
-
-    const cached = await getCached();
+    const cached = await getGame();
 
     if (cached) {
         return JSON.parse(cached.data);
     } else {
+        let excludedPlayers = [];
+        let excludedClubs = [];
+        const ydayGame = await getYesterdaysGame();
+        if (ydayGame) {
+            excludedClubs = JSON.parse(ydayGame.clubs);
+            excludedPlayers = JSON.parse(ydayGame.players);
+        }
 
-        let finalPlayers = [];
-        let allSelectedPlayers = [];
-        let allClubs = [];
-        try {
-            const { records, summary, keys } = await driver.executeQuery(
-                `
-                MATCH (p:Player)-[pf:PLAYED_FOR]-(:Club) 
-                WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > 100
-                MATCH (p)-[:PLAYED_FOR]-(c:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
-                WITH p.playerId as playerId, p.name as playerName, c.clubId as clubId, c.name as clubName, count(*) as n_clubs WHERE n_clubs > 1
-                WITH playerId, playerName, clubId, clubName, n_clubs, rand() as r ORDER BY r LIMIT 1
-                RETURN playerId, playerName, clubId, clubName`,
-                {},
-                { database: 'football' }
-            );
+        let allSelectedPlayers = {};
+        let game = {};
+        const clubs = await getClubs(['GB1'], excludedClubs);
+        let allClubIds = clubs.map(club => club.clubId);
+        for(let club in clubs) {
+            const clubId = clubs[club].clubId;
+            const clubName = clubs[club].clubName;
+            game[clubName] = [];
+            for (let i = 0; i < 4; i++) {
+                let allExcludedPlayers = Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)).concat(excludedPlayers);
+                const players = await lookupPlayerByClub(clubId, allExcludedPlayers);
+                const player = players[0];
+                allSelectedPlayers[player.get('p').properties.playerId.low] = player.get('clubs').map(club => club.properties.clubId.low);
+                game[clubName].push(player.get('p').properties.name);
+            }
+        }
 
-            for(let record of records) {
-                // Add first player
-                finalPlayers[record.get('clubName')] = [record.get('playerName')];
-                allSelectedPlayers.push(record.get('playerId').low);
-                allClubs.push(record.get('clubId').low);
-                const players = await lookupPlayersByClub(record.get('clubId').low, record.get('playerId').low, 3, allSelectedPlayers, []);
+        const playersMultipleClubsInGame = {};
 
-                for(let player of players) {
-                    finalPlayers[record.get('clubName')].push(player.get('p').properties.name);
-                    allSelectedPlayers.push(player.get('p').properties.playerId.low);
-                    
-                    finalPlayers[player.get('c2').properties.name] = [];
-                    allClubs.push(player.get('c2').properties.clubId.low);
-                    const morePlayers = await lookupPlayersByClub(player.get('c2').properties.clubId.low, player.get('p').properties.playerId.low, 4, allSelectedPlayers, allClubs);
-                    for(let morePlayer of morePlayers) {
-                        finalPlayers[player.get('c2').properties.name].push(morePlayer.get('p').properties.name);
-                        allSelectedPlayers.push(morePlayer.get('p').properties.playerId.low);
+        for (let player of Object.keys(allSelectedPlayers)) {
+            const clubsInGame = allSelectedPlayers[player].filter(club => allClubIds.includes(club));
+            if (clubsInGame.length > 1) {
+                playersMultipleClubsInGame[player] = clubsInGame.sort();
+            }
+        }
+
+        // If there are more than 1 player with more than 2 clubs in this game, check they are not the same two clubs
+        let invalidGame = false;
+        if (Object.keys(playersMultipleClubsInGame).length > 1) {
+            for (let player of Object.keys(playersMultipleClubsInGame)) {
+                for (let player2 of Object.keys(playersMultipleClubsInGame)) {
+                    if (player !== player2) {
+                        if (intersect(playersMultipleClubsInGame[player], playersMultipleClubsInGame[player2]).length > 1) {
+                            invalidGame = true;
+                        }
                     }
                 }
             }
-
-        } catch (error) {
-            console.error(error);
         }
 
+        if (invalidGame) {
+            return getGameData();
+        }
 
         let i = 1;
 
         let ret = []; 
-        for (const [key, value] of Object.entries(finalPlayers)) {
+        for (const [key, value] of Object.entries(game)) {
             ret.push(
                 {
                     category: key,
@@ -84,27 +97,59 @@ async function getGameData() {
             return getGameData();
         }
 
-        saveCached(ret);
+        saveGame(ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
 
         return ret;
     }
 }
 
 
-async function lookupPlayersByClub(clubId, playerId, numPlayers, excludePlayers, excludeClubs) {
+async function getClubs(countries = ['GB1'], excludeClubs = []) {
     const { records, summary, keys } = await driver.executeQuery(
         `
-        MATCH (p:Player WHERE NOT p.playerId IN $excludePlayers)-[pf:PLAYED_FOR]-(ec:Club WHERE NOT ec.clubId IN $excludeClubs) 
-        WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > 100
-        MATCH (p)-[:PLAYED_FOR]-(c:Club {clubId: $clubId})
-        MATCH (p)-[:PLAYED_FOR]-(c2:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
-        WITH p, c2, count(*) as n_clubs WHERE n_clubs > 1 AND c2.clubId <> $clubId
-        RETURN p, c2, rand() as r ORDER BY r LIMIT toInteger($numPlayers)`,
-        { clubId, playerId, numPlayers, excludePlayers, excludeClubs},
-        { database: 'football' }
+        MATCH (c:Club WHERE NOT c.clubId IN $excludeClubs)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN $countries) 
+        WITH c.clubId as clubId, c.name as clubName
+        WITH clubId, clubName, rand() as r ORDER BY r LIMIT 4
+        RETURN clubId, clubName`,
+        { countries, excludeClubs }
     );
 
+    let clubs = [];
+    for(let record of records) {
+        clubs.push({
+            clubId: record.get('clubId').low,
+            clubName: record.get('clubName')
+        });
+    }
+
+    return clubs;
+}
+
+
+async function lookupPlayerByClub(clubId, excludePlayers) {
+    const { records, summary, keys } = await driver.executeQuery(
+        `
+            MATCH (p:Player WHERE NOT p.playerId IN $excludePlayers)-[pf:PLAYED_FOR]-(ec:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
+            WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > 50
+            MATCH (p)-[:PLAYED_FOR]-(c:Club {clubId: $clubId})
+            WITH DISTINCT p, c
+            MATCH (p)-[:PLAYED_FOR]-(c2:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1', 'FR1', 'ES1', 'IT1', 'NL1'])
+            WITH p, collect(DISTINCT c2) as clubs WHERE size(clubs) > 1
+            RETURN p, clubs, rand() as r ORDER BY r LIMIT 1
+        `,
+        { clubId, excludePlayers}
+    );
+
+    if (!records.length) {
+        return lookupPlayerByClub(clubId, excludePlayers);
+    }
+
     return records;
+}
+
+function intersect(a, b) {
+    var setB = new Set(b);
+    return [...new Set(a)].filter(x => setB.has(x));
 }
 
 export default getGameData;
