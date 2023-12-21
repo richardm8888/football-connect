@@ -63,7 +63,7 @@ function Game() {
   return (
     <>
       <h3 className="text-xl text-center mt-4">
-        Group the players into {numCategories} clubs
+        Select {categorySize} players that have<br/>played for the same club and take a shot
       </h3>
 
       <div className={`game-wrapper`}>

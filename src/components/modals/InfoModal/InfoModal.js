@@ -14,38 +14,40 @@ function InfoModal() {
   return (
     <BaseModal
       title=""
-      trigger={<Info className="mr-4" />}
+      trigger={<Info />}
       initiallyOpen={false}
       actionButtonText="Got It!"
     >
-      <Tabs defaultValue="how-to-play">
-        <TabsList className="grid w-full grid-cols-1">
-          <TabsTrigger value="how-to-play">How To Play</TabsTrigger>
-        </TabsList>
-        <TabsContent value="how-to-play">
-          {" "}
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>What's The Goal?</AccordionTrigger>
-              <AccordionContent>
-                Group the footballers into the teams they played for
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>How Do I Play?</AccordionTrigger>
-              <AccordionContent>
-                Select the players and tap 'Submit' to check if your guess is correct.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>How Many Tries Do I Get?</AccordionTrigger>
-              <AccordionContent>
-                {`You can make ${MAX_MISTAKES} mistakes before the game ends.`}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </TabsContent>
-      </Tabs>
+        <h2 class="text-xl">How To Play</h2>
+        <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="item-1">
+            <AccordionTrigger>What's The Goal?</AccordionTrigger>
+            <AccordionContent>
+                Correctly connect the players by clubs they've played for.
+            </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-2">
+            <AccordionTrigger>How Do I Play?</AccordionTrigger>
+            <AccordionContent>
+                Select the players you think are connected and tap 'Shoot' to check if your guess is correct.<br/>
+                Fail to get all four players correct and you'll miss.<br/>
+                Guess all four teams with your five penalty kicks to win your daily shootout.
+            </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+            <AccordionTrigger>How difficult is it?</AccordionTrigger>
+            <AccordionContent>
+                Each of the four clubs has a different difficulty rating.<br />
+                One club has no players who have played for any of the other clubs and the others can contain cross-overs.
+            </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-4">
+            <AccordionTrigger>How Many Tries Do I Get?</AccordionTrigger>
+            <AccordionContent>
+            {`You can take ${MAX_MISTAKES} penalties before being knocked out of todays competition.`}
+            </AccordionContent>
+        </AccordionItem>
+        </Accordion>
     </BaseModal>
   );
 }

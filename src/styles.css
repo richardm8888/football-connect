@@ -40,6 +40,8 @@ body {
 
 header {
   display: flex;
+  justify-content: center;
+  gap: 10px;
   height: var(--header-height);
   border-bottom: 1px solid var(--color-gray-700);
   background-color: var(--color-blue-100);
@@ -53,7 +55,6 @@ header .side {
 }
 
 h1 {
-  flex: 1;
   font-size: 1.5rem;
   line-height: var(--header-height);
   text-align: center;

@@ -1,2 +1,2 @@
 export const GAME_TITLE = "Football Connections";
-export const MAX_MISTAKES = 4;
+export const MAX_MISTAKES = 5;

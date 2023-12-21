@@ -116,7 +116,7 @@ function GameControlButtonsPanel({
         disabled={isGameOver || guessCandidate.length !== categorySize}
       >
         <SendHorizontal className="h-4 w-4 mr-2" strokeWidth={1} />
-        <p className="select-none text-xs">Submit</p>
+        <p className="select-none text-xs">Shoot</p>
       </Button>
     </div>
   );

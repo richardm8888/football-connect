@@ -1,5 +1,6 @@
 import neo4j from 'neo4j-driver';
 import { sql } from "@vercel/postgres";
+import { min } from 'date-fns';
 
 const URI = process.env.NEO4J_HOST || 'neo4j://localhost:7687';
 const USER = process.env.NEO4J_USER || 'neo4j';
@@ -39,17 +40,26 @@ async function getGameData() {
         let game = {};
         const clubs = await getClubs(['GB1'], excludedClubs);
         let allClubIds = clubs.map(club => club.clubId);
+        let clubIndex = 1;
         for(let club in clubs) {
             const clubId = clubs[club].clubId;
             const clubName = clubs[club].clubName;
             game[clubName] = [];
             for (let i = 0; i < 4; i++) {
                 let allExcludedPlayers = Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)).concat(excludedPlayers);
-                const players = await lookupPlayerByClub(clubId, allExcludedPlayers);
+                let excludedClubs = [];
+                let minClubs = 2;
+                let minApps = 100 - (150 / (clubIndex + 1));
+                if (clubIndex == 4) {
+                    excludedClubs = allClubIds.filter(cId => cId !== clubId);
+                    minClubs = 1;
+                } 
+                const players = await lookupPlayerByClub(clubId, allExcludedPlayers, excludedClubs, minClubs, minApps);
                 const player = players[0];
                 allSelectedPlayers[player.get('p').properties.playerId.low] = player.get('clubs').map(club => club.properties.clubId.low);
                 game[clubName].push(player.get('p').properties.name);
             }
+            clubIndex++;
         }
 
         const playersMultipleClubsInGame = {};
@@ -126,22 +136,22 @@ async function getClubs(countries = ['GB1'], excludeClubs = []) {
 }
 
 
-async function lookupPlayerByClub(clubId, excludePlayers) {
+async function lookupPlayerByClub(clubId, excludedPlayers, excludedClubs = [], minClubs = 1, minApps = 50) {
     const { records, summary, keys } = await driver.executeQuery(
         `
-            MATCH (p:Player WHERE NOT p.playerId IN $excludePlayers)-[pf:PLAYED_FOR]-(ec:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
-            WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > 50
+            MATCH (p:Player WHERE NOT p.playerId IN $excludedPlayers)-[pf:PLAYED_FOR]-(ec:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
+            WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > $minApps
             MATCH (p)-[:PLAYED_FOR]-(c:Club {clubId: $clubId})
             WITH DISTINCT p, c
-            MATCH (p)-[:PLAYED_FOR]-(c2:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1', 'FR1', 'ES1', 'IT1', 'NL1'])
-            WITH p, collect(DISTINCT c2) as clubs WHERE size(clubs) > 1
+            MATCH (p)-[:PLAYED_FOR]-(c2:Club WHERE NOT c2.clubId IN $excludedClubs)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1', 'FR1', 'ES1', 'IT1', 'NL1'])
+            WITH p, collect(DISTINCT c2) as clubs WHERE size(clubs) > $minClubs
             RETURN p, clubs, rand() as r ORDER BY r LIMIT 1
         `,
-        { clubId, excludePlayers}
+        { clubId, excludedPlayers, excludedClubs, minClubs, minApps },
     );
 
     if (!records.length) {
-        return lookupPlayerByClub(clubId, excludePlayers);
+        return lookupPlayerByClub(clubId, excludedPlayers, excludedClubs);
     }
 
     return records;
