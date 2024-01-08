@@ -1,5 +1,4 @@
 import React from "react";
-import Header from "../Header";
 import Game from "../Game";
 
 import { Toaster } from "../ui/toaster";
@@ -12,7 +11,6 @@ function App() {
       <GameStatusProvider>
         <div className="wrapper">
           <Toaster />
-          <Header />
           <Game />
         </div>
       </GameStatusProvider>

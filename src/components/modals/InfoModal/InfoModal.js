@@ -1,7 +1,5 @@
 import React from "react";
 import { MAX_MISTAKES } from "../../../lib/constants";
-import { Info } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import {
   Accordion,
   AccordionContent,
@@ -10,11 +8,11 @@ import {
 } from "../../ui/accordion";
 import BaseModal from "../BaseModal";
 
-function InfoModal() {
+function InfoModal({ trigger }) {
   return (
     <BaseModal
       title=""
-      trigger={<Info />}
+      trigger={trigger}
       initiallyOpen={false}
       actionButtonText="Got It!"
     >

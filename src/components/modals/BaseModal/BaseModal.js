@@ -33,7 +33,7 @@ function BaseModal({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      {!!trigger && <AlertDialogTrigger>{trigger}</AlertDialogTrigger>}
+      {!!trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent
         handleMouseDownOnOverlay={handleCloseEvent}
         onEscapeKeyDown={handleCloseEvent}

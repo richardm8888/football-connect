@@ -5,8 +5,8 @@
 html {
   overflow-y: scroll;
 
-  --game-spacing: 32px;
-  --header-height: 4rem;
+  --game-spacing: 16px;
+  --header-height: 3rem;
 
   --color-success: hsl(150deg 70% 30%);
   --color-warning: hsl(50deg 100% 30%);
@@ -16,7 +16,8 @@ html {
   --color-gray-500: hsl(0deg 0% 50%);
   --color-gray-700: hsl(0deg 0% 75%);
   --color-gray-900: hsl(0deg 0% 90%);
-  --color-blue-100: hsl(200deg 100% 30%);
+  --color-blue-200: hsl(200deg 100% 30%);
+  --color-blue-100: hsl(200deg 100% 90%);
 }
 
 /*
@@ -36,16 +37,22 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 header {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 10px;
   height: var(--header-height);
-  border-bottom: 1px solid var(--color-gray-700);
   background-color: var(--color-blue-100);
-  color: #ffffff;
+  color: #000000;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 header .side {
@@ -71,12 +78,12 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: var(--game-spacing);
-  padding-top: 16px;
   padding-bottom: var(--game-spacing);
   padding-left: var(--game-spacing);
   padding-right: var(--game-spacing);
-  margin: 0 auto;
+  margin: 0;
   max-width: 100%;
+  background-color: var(--color-blue-100);
 
   @media (min-width: 400px) {
     min-width: 400px;

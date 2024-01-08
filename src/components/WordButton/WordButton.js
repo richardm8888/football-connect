@@ -40,13 +40,13 @@ function WordButton({ word, fullCandidateSize }) {
   //const fontSizeByWordLength = 9characters works with 0.6rem
 
   function getFontSize(word) {
-    const baseLength = 7;
+    const baseLength = 20;
     const wordLength = word.length;
     let fontSize = 1;
     if (wordLength > baseLength) {
       const numExtraChars = wordLength - baseLength;
-      fontSize = fontSize - numExtraChars * 0.1;
-      fontSize = Math.max(0.5, fontSize);
+      fontSize = fontSize - numExtraChars * 0.5;
+      fontSize = Math.max(0.75, fontSize);
       return `${fontSize}em`;
     } else {
       return null;
@@ -56,13 +56,13 @@ function WordButton({ word, fullCandidateSize }) {
   return (
     <Toggle
       className={`${styles.growShrink} select-none`}
-      variant="outline"
+      variant="filled"
       pressed={isSelected}
       onClick={flipSelection}
     >
       <p
-        style={{ }}
-        className="text-xxs leading-3"
+        style={{ fontSize: getFontSize(word) }}
+        className="text-xs leading-4"
       >
         {word}
       </p>
