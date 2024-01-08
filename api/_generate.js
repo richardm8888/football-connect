@@ -8,33 +8,81 @@ const PASSWORD = process.env.NEO4J_PASSWORD || 'qwerty123';
 const driver = neo4j.driver(URI, neo4j.auth.basic(USER, PASSWORD));
 
 async function getYesterdaysGame() {
-    const { rows } = await sql`SELECT * FROM games WHERE date = CURRENT_DATE - 1;`;
-    return rows[0];
+
+    let clubs, players = null;
+
+    const { records: clubRecords } = await driver.executeQuery(
+        `
+        MATCH (g:Game {date: date() - duration('P1D')})-[:CONTAINS_CLUB]-(c:Club)
+        RETURN collect(c.clubId) as clubIds
+        `,
+        {}
+    );
+
+    if (clubRecords.length) {
+        clubs = clubRecords[0].get('clubIds');
+    } 
+
+    const { records: playerRecords, summary, keys } = await driver.executeQuery(
+        `
+        MATCH (g:Game {date: date() - duration('P1D')})-[:CONTAINS_PLAYER]-(p:Player)
+        RETURN collect(p.playerId) as playerIds
+        `,
+        {}
+    );
+
+    if (playerRecords.length) {
+        players = playerRecords[0].get('playerIds');
+    } 
+
+    return { clubs, players };
 }
 
 
 async function getGame() {
-    const { rows } = await sql`SELECT * FROM games WHERE date = CURRENT_DATE;`;
-    return rows[0];
+
+    const { records, summary, keys } = await driver.executeQuery(
+        `
+        MATCH (g:Game {date: date()})
+        RETURN g.game_data as gameData
+        `,
+        {}
+    );
+
+    if (records.length) {
+        return records[0].get('gameData');
+    } else {
+        return null;
+    }
 }
 
 async function saveGame(gameData, clubIds, playerIds) {
-    await sql`INSERT INTO games (date, data, clubs, players) VALUES (CURRENT_DATE, ${JSON.stringify(gameData)}, ${JSON.stringify(clubIds)}, ${JSON.stringify(playerIds)});`;
+    const { records, summary, keys } = await driver.executeQuery(
+        `
+        CREATE (g:Game {date: date(), game_data: $gameData})
+        WITH g
+        UNWIND $clubIds as clubId
+        WITH DISTINCT clubId, g
+        MATCH (c:Club {clubId: toInteger(clubId)})
+        CREATE (g)-[:CONTAINS_CLUB]->(c)
+        WITH g
+        UNWIND $playerIds as playerId
+        WITH DISTINCT playerId, g
+        MATCH (p:Player {playerId: toInteger(playerId)})
+        CREATE (g)-[:CONTAINS_PLAYER]->(p)`,
+        { gameData: JSON.stringify(gameData), clubIds, playerIds }
+    );
 }
 
 async function getGameData() {
     const cached = await getGame();
 
     if (cached) {
-        return JSON.parse(cached.data);
+        return JSON.parse(cached);
     } else {
-        let excludedPlayers = [];
-        let excludedClubs = [];
         const ydayGame = await getYesterdaysGame();
-        if (ydayGame) {
-            excludedClubs = JSON.parse(ydayGame.clubs);
-            excludedPlayers = JSON.parse(ydayGame.players);
-        }
+        let excludedClubs = ydayGame.clubs ?? [];
+        let excludedPlayers =ydayGame.players ?? [];
 
         let allSelectedPlayers = {};
         let game = {};
@@ -107,7 +155,7 @@ async function getGameData() {
             return getGameData();
         }
 
-        saveGame(ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
+        await saveGame(ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
 
         return ret;
     }
