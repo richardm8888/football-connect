@@ -141,7 +141,7 @@ async function lookupPlayerByClub(clubId, excludedPlayers, excludedClubs = [], m
         `
             MATCH (p:Player WHERE NOT p.playerId IN $excludedPlayers)-[pf:PLAYED_FOR]-(ec:Club)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1'])
             WITH p, sum(pf.count) as totalPlayed WHERE totalPlayed > $minApps
-            MATCH (p)-[:PLAYED_FOR]-(c:Club {clubId: $clubId})
+            MATCH (p)-[pf:PLAYED_FOR WHERE pf.count > 10]-(c:Club {clubId: $clubId})
             WITH DISTINCT p, c
             MATCH (p)-[:PLAYED_FOR]-(c2:Club WHERE NOT c2.clubId IN $excludedClubs)-[:PLAYS_IN]-(cp:Competition WHERE cp.competitionId IN ['GB1', 'FR1', 'ES1', 'IT1', 'NL1'])
             WITH p, collect(DISTINCT c2) as clubs WHERE size(clubs) > $minClubs
