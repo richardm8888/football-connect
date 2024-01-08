@@ -1,6 +1,4 @@
 import neo4j from 'neo4j-driver';
-import { sql } from "@vercel/postgres";
-import { min } from 'date-fns';
 
 const URI = process.env.NEO4J_HOST || 'neo4j://localhost:7687';
 const USER = process.env.NEO4J_USER || 'neo4j';
@@ -74,11 +72,13 @@ async function saveGame(gameData, clubIds, playerIds) {
     );
 }
 
-async function getGameData() {
+
+
+export default async function handler(request, context) {
     const cached = await getGame();
 
     if (cached) {
-        return JSON.parse(cached);
+        return cached;
     } else {
         const ydayGame = await getYesterdaysGame();
         let excludedClubs = ydayGame.clubs ?? [];
@@ -139,7 +139,7 @@ async function getGameData() {
         }
 
         if (invalidGame) {
-            return getGameData();
+            return handler();
         }
 
         let i = 1;
@@ -157,7 +157,7 @@ async function getGameData() {
         }
 
         if (ret.length < 4) {
-            return getGameData();
+            return handler();
         }
 
         await saveGame(ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
@@ -259,4 +259,3 @@ function getGameClubs() {
     ];
 }
 
-export default getGameData;
