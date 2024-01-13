@@ -11,7 +11,7 @@ function SingleMistakeDisplay({ isUsed }) {
       {isUsed ? (
         <CircleSlash className="h-4 w-4 stroke-neutral-400" />
       ) : (
-        <MdOutlineSportsSoccer size={'16px'} color={'#a3a3a3'} />
+        <MdOutlineSportsSoccer size={'16px'} color={'#666666'} />
       )}
     </div>
   );

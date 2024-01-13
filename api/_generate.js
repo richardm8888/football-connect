@@ -78,7 +78,7 @@ export default async function handler(request, context) {
     const cached = await getGame();
 
     if (cached) {
-        return cached;
+        return JSON.parse(cached);
     } else {
         const ydayGame = await getYesterdaysGame();
         let excludedClubs = ydayGame.clubs ?? [];
@@ -103,9 +103,9 @@ export default async function handler(request, context) {
                 if (clubIndex == 4) {
                     excludedClubs = allClubIds.filter(cId => cId !== clubId);
                     minClubs = 1;
-                    maxClubs = 1;
+                    //maxClubs = 1;
                 } else if (clubIndex == 3) {
-                    maxClubs = 2;
+                    // maxClubs = 2;
                 }
                 const players = await lookupPlayerByClub(clubId, allExcludedPlayers, excludedClubs, minClubs, maxClubs, minApps, includedClubs);
                 const player = players[0];
@@ -180,7 +180,7 @@ async function getClubs(includeClubs = [], excludeClubs = []) {
     let clubs = [];
     for(let record of records) {
         clubs.push({
-            clubId: record.get('clubId').low,
+            clubId: record.get('clubId'),
             clubName: record.get('clubName')
         });
     }
@@ -226,8 +226,8 @@ function getGameClubs() {
         13,
         244,
         583,
-        1041,
-        162,
+        // 1041, // OL
+        // 162, // Monaca
         46,
         506,
         5,

@@ -65,6 +65,7 @@ h1 {
   font-size: 1.5rem;
   line-height: var(--header-height);
   text-align: center;
+  font-family: 'Soccer Scoreboard', sans-serif;
 }
 
 @media (max-width: 25rem) {
@@ -77,6 +78,7 @@ h1 {
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;    
   gap: var(--game-spacing);
   padding-bottom: var(--game-spacing);
   padding-left: var(--game-spacing);

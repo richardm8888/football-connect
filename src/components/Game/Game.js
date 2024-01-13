@@ -17,6 +17,8 @@ import GameControlButtonsPanel from "../GameControlButtonsPanel";
 import ViewResultsModal from "../modals/ViewResultsModal";
 import InfoModal from "../modals/InfoModal";
 
+import { MdOutlineSportsSoccer } from "react-icons/md";
+
 function Game() {
     const { gameData, categorySize, numCategories } =
         React.useContext(PuzzleDataContext);
@@ -73,6 +75,7 @@ function Game() {
             <div className={`game-wrapper`}>
                 {isIntro ? (
                     <>
+                        <MdOutlineSportsSoccer size={'50px'} color={'#666666'} />
                         <h3 className="text-l text-center">The football player connections game</h3>
                         <Button
                             size="lg"
