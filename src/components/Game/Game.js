@@ -2,7 +2,6 @@ import React from "react";
 import { shuffleGameData } from "../../lib/game-helpers";
 import GameGrid from "../GameGrid";
 import Header from "../Header";
-import { Button } from "../ui/button";
 import NumberOfMistakesDisplay from "../NumberOfMistakesDisplay";
 import GameLostModal from "../modals/GameLostModal";
 import GameWonModal from "../modals/GameWonModal";
@@ -15,11 +14,8 @@ import { GameStatusContext } from "../../providers/GameStatusProvider";
 import GameControlButtonsPanel from "../GameControlButtonsPanel";
 
 import ViewResultsModal from "../modals/ViewResultsModal";
-import InfoModal from "../modals/InfoModal";
 
-import { MdOutlineSportsSoccer } from "react-icons/md";
-
-function Game() {
+function Game({ difficulty }) {
     const { gameData, categorySize, numCategories } =
         React.useContext(PuzzleDataContext);
     const { submittedGuesses, solvedGameData, isGameOver, isGameWon } =
@@ -29,7 +25,6 @@ function Game() {
         shuffleGameData({ gameData })
     );
 
-    const [isIntro, setIsIntro] = React.useState(true);
     const [isEndGameModalOpen, setisEndGameModalOpen] = React.useState(false);
     const [gridShake, setGridShake] = React.useState(false);
     const [showConfetti, setShowConfetti] = React.useState(false);
@@ -69,78 +64,54 @@ function Game() {
 
     return (
         <>
-            
-            <Header showInfo={!isIntro} />
+            <Header showInfo={true} />
 
             <div className={`game-wrapper`}>
-                {isIntro ? (
+                <h3 className="text-l text-center">
+                    {`Difficulty level: ${difficulty}`}
+                </h3>
+                <h3 className="text-l text-center">
+                    Select {categorySize} players that have<br />played for the same club and take a shot
+                </h3>
+                {isGameOver && isGameWon ? (
+                    <GameWonModal
+                        open={isEndGameModalOpen}
+                        submittedGuesses={submittedGuesses}
+                    />
+                ) : (
+                    <GameLostModal
+                        open={isEndGameModalOpen}
+                        submittedGuesses={submittedGuesses}
+                    />
+                )}
+                <GameGrid
+                    gameRows={shuffledRows}
+                    shouldGridShake={gridShake}
+                    setShouldGridShake={setGridShake}
+                />
+                {showConfetti && isGameOver && (
+                    <div className="grid place-content-center">
+                        <ConfettiExplosion
+                            particleCount={100}
+                            force={0.8}
+                            duration={2500}
+                        />
+                    </div>
+                )}
+                <Separator />
+
+                {!isGameOver ? (
                     <>
-                        <MdOutlineSportsSoccer size={'50px'} color={'#666666'} />
-                        <h3 className="text-l text-center">The football player connections game</h3>
-                        <Button
-                            size="lg"
-                            variant="submit"
-                            onClick={() => setIsIntro(false)}
-                        >
-                            {"Play"}
-                        </Button>
-                        <InfoModal 
-                            trigger={(
-                                <Button
-                                    size="lg"
-                                    variant="outline"
-                                >
-                                    {"Rules"}
-                                </Button>
-                            )}
+                        <NumberOfMistakesDisplay />
+                        <GameControlButtonsPanel
+                            shuffledRows={shuffledRows}
+                            setShuffledRows={setShuffledRows}
+                            setGridShake={setGridShake}
                         />
                     </>
                 ) : (
-                    <>
-                        <h3 className="text-l text-center">
-                            Select {categorySize} players that have<br />played for the same club and take a shot
-                        </h3>
-                        {isGameOver && isGameWon ? (
-                            <GameWonModal
-                                open={isEndGameModalOpen}
-                                submittedGuesses={submittedGuesses}
-                            />
-                        ) : (
-                            <GameLostModal
-                                open={isEndGameModalOpen}
-                                submittedGuesses={submittedGuesses}
-                            />
-                        )}
-                        <GameGrid
-                            gameRows={shuffledRows}
-                            shouldGridShake={gridShake}
-                            setShouldGridShake={setGridShake}
-                        />
-                        {showConfetti && isGameOver && (
-                            <div className="grid place-content-center">
-                                <ConfettiExplosion
-                                    particleCount={100}
-                                    force={0.8}
-                                    duration={2500}
-                                />
-                            </div>
-                        )}
-                        <Separator />
-
-                        {!isGameOver ? (
-                            <>
-                                <NumberOfMistakesDisplay />
-                                <GameControlButtonsPanel
-                                    shuffledRows={shuffledRows}
-                                    setShuffledRows={setShuffledRows}
-                                    setGridShake={setGridShake}
-                                />
-                            </>
-                        ) : (
-                            <ViewResultsModal />
-                        )}
-                    </>
-                )}                
+                    <ViewResultsModal />
+                )}          
             </div>
         </>
     );

@@ -11,11 +11,11 @@ import {
 } from "../../lib/game-helpers";
 export const GameStatusContext = React.createContext();
 
-function GameStatusProvider({ children }) {
+function GameStatusProvider({ difficulty, children }) {
   const { gameData } = React.useContext(PuzzleDataContext);
   const [submittedGuesses, setSubmittedGuesses] = React.useState([]);
   const [solvedGameData, setSolvedGameData] = React.useState(() => {
-    const loadedState = loadGameStateFromLocalStorage();
+    const loadedState = loadGameStateFromLocalStorage(difficulty);
     console.log("checking game state!", {
       loadedState: loadedState,
       gd1: gameData,
@@ -55,7 +55,7 @@ function GameStatusProvider({ children }) {
       setIsGameWon(true);
     }
     const gameState = { submittedGuesses, solvedGameData, gameData };
-    saveGameStateToLocalStorage(gameState);
+    saveGameStateToLocalStorage(gameState, difficulty);
   }, [solvedGameData]);
 
   // use effect to check if all mistakes have been used and end the game accordingly
@@ -65,7 +65,7 @@ function GameStatusProvider({ children }) {
       setIsGameWon(false);
     }
     const gameState = { submittedGuesses, solvedGameData, gameData };
-    saveGameStateToLocalStorage(gameState);
+    saveGameStateToLocalStorage(gameState, difficulty);
   }, [submittedGuesses]);
 
   return (

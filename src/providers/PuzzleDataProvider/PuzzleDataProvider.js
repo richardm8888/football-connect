@@ -1,18 +1,18 @@
 import React, { useEffect } from "react";
-// import fetch from 'node-fetch';
+import Header from "../../components/Header";
 
 export const PuzzleDataContext = React.createContext();
 
-function PuzzleDataProvider({ children }) {
-    const [gameData, setGameData] = React.useState([]);
+function PuzzleDataProvider({ difficulty, children }) {
+    const [gameData, setGameData] = React.useState({});
 
     useEffect(() => {
-        fetch("/api/game")
+        fetch("/api/game?difficulty=" + difficulty)
             .then(res => res.json())
             .then(
                 (result) => {
-                    console.log(result);
-                    setGameData(result.GameData);
+                    
+                    setGameData({...gameData, [difficulty]: result.GameData});
                 },
                 // Note: it's important to handle errors here
                 // instead of a catch() block so that we don't swallow
@@ -23,17 +23,23 @@ function PuzzleDataProvider({ children }) {
             );
     }, []);
 
-
-    const categorySize = gameData[0]?.words?.length ?? 0;
-    const numCategories = gameData?.length ?? 0;
-
-    if (!gameData.length) {
-        return <></>;
+    if (!gameData[difficulty]?.length) {
+        return (
+            <div className="wrapper">
+                <Header showInfo={true} />
+                <div className={`game-wrapper`}>
+                    <p>LOADING...</p>
+                </div>
+            </div>
+        );
     }
+
+    const categorySize = gameData[difficulty][0]?.words?.length ?? 0;
+    const numCategories = gameData[difficulty][0]?.length ?? 0;
 
     return (
         <PuzzleDataContext.Provider
-            value={{ gameData, numCategories, categorySize }}
+            value={{ gameData: gameData[difficulty], numCategories, categorySize }}
         >
             {children}
         </PuzzleDataContext.Provider>

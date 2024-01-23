@@ -37,11 +37,10 @@ async function getYesterdaysGame() {
 }
 
 
-async function getGame() {
-
+async function getGame(difficulty = 'easy') {
     const { records, summary, keys } = await driver.executeQuery(
         `
-        MATCH (g:Game {date: date()})
+        MATCH (g:Game:${difficulty.toUpperCase()} {date: date()})
         RETURN g.game_data as gameData
         `,
         {}
@@ -54,10 +53,10 @@ async function getGame() {
     }
 }
 
-async function saveGame(gameData, clubIds, playerIds) {
+async function saveGame(difficulty, gameData, clubIds, playerIds) {
     const { records, summary, keys } = await driver.executeQuery(
         `
-        CREATE (g:Game {date: date(), game_data: $gameData})
+        CREATE (g:Game:${difficulty.toUpperCase()} {date: date(), game_data: $gameData})
         WITH g
         UNWIND $clubIds as clubId
         WITH DISTINCT clubId, g
@@ -75,7 +74,8 @@ async function saveGame(gameData, clubIds, playerIds) {
 
 
 export default async function handler(request, context) {
-    const cached = await getGame();
+    const difficulty = request.query['difficulty'] ?? 'easy';
+    const cached = await getGame(difficulty);
 
     if (cached) {
         return JSON.parse(cached);
@@ -83,7 +83,7 @@ export default async function handler(request, context) {
         const ydayGame = await getYesterdaysGame();
         let excludedClubs = ydayGame.clubs ?? [];
         let excludedPlayers =ydayGame.players ?? [];
-        let includedClubs = getGameClubs();
+        let includedClubs = getGameClubs(difficulty);
 
         let allSelectedPlayers = {};
         let game = {};
@@ -103,9 +103,9 @@ export default async function handler(request, context) {
                 if (clubIndex == 4) {
                     excludedClubs = allClubIds.filter(cId => cId !== clubId);
                     minClubs = 1;
-                    //maxClubs = 1;
+                    minApps += 100;
                 } else if (clubIndex == 3) {
-                    // maxClubs = 2;
+                    minApps += 50;
                 }
                 const players = await lookupPlayerByClub(clubId, allExcludedPlayers, excludedClubs, minClubs, maxClubs, minApps, includedClubs);
                 const player = players[0];
@@ -139,7 +139,7 @@ export default async function handler(request, context) {
         }
 
         if (invalidGame) {
-            return handler();
+            return handler(request);
         }
 
         let i = 1;
@@ -157,10 +157,10 @@ export default async function handler(request, context) {
         }
 
         if (ret.length < 4) {
-            return handler();
+            return handler(request);
         }
 
-        await saveGame(ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
+        await saveGame(difficulty, ret, allClubIds, Object.keys(allSelectedPlayers).map(playerId => parseInt(playerId)));
 
         return ret;
     }
@@ -217,24 +217,23 @@ function intersect(a, b) {
 }
 
 
-function getGameClubs() {
+function getGameClubs(difficulty = 'easy') {
+    var clubs = getEnglishClubs();
+
+    switch (difficulty) {
+        case 'medium':
+            clubs = clubs.concat(getSpanishClubs());
+            break;
+        case 'hard':
+            clubs = clubs.concat(getSpanishClubs(), getItalianClubs(), getGermanClubs(), getFrenchClubs());
+            break
+    }
+    
+    return clubs;
+}
+
+function getEnglishClubs() {
     return [
-        940,
-        131,
-        418,
-        368,
-        13,
-        244,
-        583,
-        // 1041, // OL
-        // 162, // Monaca
-        46,
-        506,
-        5,
-        1025,
-        12,
-        398,
-        6195,
         762,
         543,
         873,
@@ -254,8 +253,42 @@ function getGameClubs() {
         1132,
         29,
         11,
-        27,
-        16
     ];
 }
 
+function getSpanishClubs() {
+    return [
+        131, // Barcelona
+        418, // Real Madrid
+        // 940, // Celta Vigo
+        // 368, // Sevilla
+        // 13, // Athletico
+    ];
+}
+
+function getItalianClubs() {
+    return [
+        46, // Inter
+        506, // Juve
+        5, // AC
+        // 12, // Roma
+        // 398, // Lazio
+        // 6195, //Napoli
+    ];
+}
+
+function getFrenchClubs() {
+    return [
+        244, // Marseille
+        583, // PSG
+        1041, // OL
+        162, // Monaco
+    ];
+}
+
+function getGermanClubs() {
+    return [
+        27, // Bayern
+        16 // Dortmund
+    ];
+}
