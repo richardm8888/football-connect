@@ -48,6 +48,15 @@ function App() {
 
             {isAd && (
               <>
+
+                <ins className="adsbygoogle"
+                    style={{display: 'inline-block', width: 300, height: 250}}
+                    data-ad-client="ca-pub-6466715605471144"
+                    data-ad-slot="6409726561"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+
                 <Button
                     size="lg"
                     variant="submit"
