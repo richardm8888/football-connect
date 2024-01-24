@@ -14,6 +14,14 @@ function App() {
   const [isIntro, setIsIntro] = React.useState(true);
   const [isAd, setIsAd] = React.useState(false);
   const [difficulty, setDifficulty] = React.useState('easy');
+
+  React.useEffect(() => {
+    if (isAd) {
+    	googletag.cmd.push(function() { googletag.display('div-gpt-ad-1706129779392-0'); });
+    }
+  }, [isAd]);
+
+
   if (isIntro || isAd) {
     return (
       <div className="wrapper">
@@ -47,16 +55,9 @@ function App() {
             )}
 
             {isAd && (
-              <>
-
-                <ins className="adsbygoogle"
-                    style={{display: 'inline-block', width: 300, height: 250}}
-                    data-ad-client="ca-pub-6466715605471144"
-                    data-ad-slot="6409726561"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-
+              <>  
+		    
+		<div id='div-gpt-ad-1706129779392-0' style={{minWidth: 300, minHeight: 250}}></div>
                 <Button
                     size="lg"
                     variant="submit"
