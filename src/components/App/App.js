@@ -26,7 +26,7 @@ function App() {
   };
 
   React.useEffect(() => {
-    if (banner.current && !banner.current.firstChild) {
+    if (isAd && banner?.current && !banner?.current.firstChild) {
         const conf = document.createElement('script')
         const script = document.createElement('script')
         script.type = 'text/javascript'
@@ -36,7 +36,7 @@ function App() {
         banner.current.append(conf)
         banner.current.append(script)
     }
-  }, [banner]);
+  }, [banner, isAd]);
 
   if (isIntro || isAd) {
     return (
