@@ -14,7 +14,7 @@ function App() {
   const [isIntro, setIsIntro] = React.useState(true);
   const [isAd, setIsAd] = React.useState(false);
   const [difficulty, setDifficulty] = React.useState('easy');
-  const banner = React.useRef<HTMLDivElement>();
+  const banner = React.useRef<HTMLDivElement>(null);
 
 
   const atOptions = {
