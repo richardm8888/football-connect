@@ -38,8 +38,8 @@
   },
   "scripts": {
     "predev": "rimraf .parcel-cache dist",
-    "dev": "parcel src/index.html && cp src/ads.txt dist/",
-    "build": "parcel build src/index.html && cp src/ads.txt dist/",
+    "dev": "parcel src/index.html src/sw.js && cp src/ads.txt dist/",
+    "build": "parcel build src/index.html src/sw.js && cp src/ads.txt dist/",
     "nc": "new-component"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
