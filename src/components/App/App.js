@@ -70,11 +70,11 @@ function App() {
               </>
             )}
 
-            {isAd && (
-              <>
+	    
+	   <div ref={banner}></div>
 
-                <div ref={banner}></div>
-                  
+            {isAd && (
+              <>  
                 <Button
                     size="lg"
                     variant="submit"
