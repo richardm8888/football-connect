@@ -14,6 +14,30 @@ function App() {
   const [isIntro, setIsIntro] = React.useState(true);
   const [isAd, setIsAd] = React.useState(false);
   const [difficulty, setDifficulty] = React.useState('easy');
+  const banner = React.useRef<HTMLDivElement>();
+
+
+  const atOptions = {
+		'key' : '24f3077a26ed67ffedec91719e64ee1d',
+		'format' : 'iframe',
+		'height' : 250,
+		'width' : 300,
+		'params' : {}
+	};
+
+  useEffect(() => {
+    if (banner.current && !banner.current.firstChild) {
+        const conf = document.createElement('script')
+        const script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = `//www.highperformancedformats.com/${atOptions.key}/invoke.js`
+        conf.innerHTML = `atOptions = ${JSON.stringify(atOptions)}`
+
+        banner.current.append(conf)
+        banner.current.append(script)
+    }
+  }, [banner]);
+
   if (isIntro || isAd) {
     return (
       <div className="wrapper">
@@ -49,13 +73,7 @@ function App() {
             {isAd && (
               <>
 
-                <ins className="adsbygoogle"
-                    style={{display: 'inline-block', width: 300, height: 250}}
-                    data-ad-client="ca-pub-6466715605471144"
-                    data-ad-slot="6409726561"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
+                <div ref={banner}></div>
                   
                 <Button
                     size="lg"
