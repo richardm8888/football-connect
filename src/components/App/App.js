@@ -57,7 +57,7 @@ function App() {
             {isAd && (
               <>  
 		    
-		<div id='div-gpt-ad-1706129779392-0' style='min-width: 300px; min-height: 250px;'></div>
+		<div id='div-gpt-ad-1706129779392-0' style={{minWidth: 300, minHeight: 250}}></div>
                 <Button
                     size="lg"
                     variant="submit"
