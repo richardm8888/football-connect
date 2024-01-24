@@ -57,6 +57,8 @@ function App() {
                     (adsbygoogle = window.adsbygoogle || []).push({});
                 </script>
 
+                <script src="https://alwingulla.com/88/tag.min.js" data-zone="37767" async data-cfasync="false"></script>
+
                 <Button
                     size="lg"
                     variant="submit"
