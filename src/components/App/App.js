@@ -14,29 +14,13 @@ function App() {
   const [isIntro, setIsIntro] = React.useState(true);
   const [isAd, setIsAd] = React.useState(false);
   const [difficulty, setDifficulty] = React.useState('easy');
-  const banner = React.useRef<HTMLDivElement>(null);
-
-
-  const atOptions = {
-	'key' : '24f3077a26ed67ffedec91719e64ee1d',
-	'format' : 'iframe',
-	'height' : 250,
-	'width' : 300,
-	'params' : {}
-  };
 
   React.useEffect(() => {
-    if (isAd && banner?.current && !banner?.current.firstChild) {
-        const conf = document.createElement('script')
-        const script = document.createElement('script')
-        script.type = 'text/javascript'
-        script.src = `//www.highperformancedformats.com/${atOptions.key}/invoke.js`
-        conf.innerHTML = `atOptions = ${JSON.stringify(atOptions)}`
-
-        banner.current.append(conf)
-        banner.current.append(script)
+    if (isAd) {
+    	googletag.cmd.push(function() { googletag.display('div-gpt-ad-1706129779392-0'); });
     }
-  }, [banner, isAd]);
+  }, [isAd]);
+
 
   if (isIntro || isAd) {
     return (
@@ -70,11 +54,10 @@ function App() {
               </>
             )}
 
-	    
-	   <div ref={banner}></div>
-
             {isAd && (
               <>  
+		    
+		<div id='div-gpt-ad-1706129779392-0' style='min-width: 300px; min-height: 250px;'>
                 <Button
                     size="lg"
                     variant="submit"
