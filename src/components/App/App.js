@@ -18,14 +18,14 @@ function App() {
 
 
   const atOptions = {
-		'key' : '24f3077a26ed67ffedec91719e64ee1d',
-		'format' : 'iframe',
-		'height' : 250,
-		'width' : 300,
-		'params' : {}
-	};
+	'key' : '24f3077a26ed67ffedec91719e64ee1d',
+	'format' : 'iframe',
+	'height' : 250,
+	'width' : 300,
+	'params' : {}
+  };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (banner.current && !banner.current.firstChild) {
         const conf = document.createElement('script')
         const script = document.createElement('script')
